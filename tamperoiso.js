@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         tamperOIso - OIer的好帮手
 // @namespace    https://www.oiso.cf/
-// @version      0.9.1
+// @version      0.9.2
 // @description  在洛谷、Codeforces等网站上提供OI检索服务
 // @author       OIso开发团队
 // @match        https://www.luogu.com.cn/*
 // @match        https://www.oiso.cf/*
+// @connect      online.oiso.cf
+// @require      https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js
 // @icon         https://www.oiso.cf/img/favicon.svg
-// @grant        none
+// @grant        GM_xmlhttpRequest
 // ==/UserScript==
 (function () {
     'use strict';
@@ -76,6 +78,7 @@
 
                 // 搜索框的输入框
                 var searchBoxInput = document.createElement('input');
+                searchBoxInput.id = "searchBoxInput";
                 searchBoxInput.style.position = 'absolute';
                 searchBoxInput.style.top = '0';
                 searchBoxInput.style.left = '0';
@@ -100,7 +103,7 @@
                 searchBoxInput.addEventListener('keydown', function (event) {
                     if (event.keyCode == 13) {
                         console.log("enter pressed.");
-                        window.location.href = "https://www.oiso.cf/search?q=" + searchBoxInput.value;
+                        window.open("https://www.oiso.cf/search?q=" + searchBoxInput.value);
                     }
                 });
                 // 当输入框内容发生变化，getSuggestions函数会被调用
@@ -120,6 +123,7 @@
                 searchBoxButton.style.fontSize = '20px';
                 searchBoxButton.style.fontWeight = 'bold';
                 searchBoxButton.style.cursor = 'pointer';
+                searchBoxButton.style.fill = 'currentColor';
                 // svg图标来自Google
                 searchBoxButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>';
                 // 如果系统是暗色模式，则图标是白色的
@@ -174,7 +178,6 @@
                 suggestionContainer.style.display = 'block';
                 suggestionContainer.style.position = 'absolute';
                 suggestionContainer.style.top = '50px';
-                suggestionContainer.style.left = '50%';
                 suggestionContainer.style.transform = 'translateX(-50%);';
                 suggestionContainer.style.width = '620px';
                 // 如果系统是暗色模式，则背景是灰色的
@@ -202,11 +205,15 @@
                     }
                 });
 
-                function gosug(name) {
+                const script_str = `function gosug(name) {
                     console.log("gosug" + name)
-                    $searchBoxInput.val(name);
+                    document.getElementById("searchBoxInput").value = (name);
                     window.open('https://www.oiso.cf/search?q=' + name);
-                }
+                }`;
+                var script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.innerHTML = script_str;
+                document.getElementsByTagName('body')[0].appendChild(script);
 
                 function getSuggestions() {
                     if (window['sugStatus'] === true) {
