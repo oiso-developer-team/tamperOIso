@@ -248,6 +248,31 @@
                 }
             }
         });
+
+        // 头像挂件服务
+        var avatars = document.getElementsByClassName('am-comment-avatar');
+        for (let i = 0; i < avatars.length; i++) {
+            const avatar = avatars[i];
+            console.log(avatar);
+            // avatar 是一个 img 标签
+            // 添加一张头像挂件图片，刚好覆盖在头像上面
+            // https://bpic.588ku.com/element_origin_min_pic/20/10/14/c87c8d105577605fcb43b91835a9a3b5.jpg
+            var avatarPendant = document.createElement('img');
+            avatarPendant.src = 'https://bpic.588ku.com/element_origin_min_pic/20/10/14/c87c8d105577605fcb43b91835a9a3b5.jpg';
+            avatarPendant.style.position = 'absolute';
+            avatarPendant.className = 'am-comment-avatar-pendant';
+            avatarPendant.style.top = '0';
+            avatarPendant.style.left = '0';
+            avatarPendant.style.height = '48px';
+            // 中心放大
+            avatarPendant.style.transform = 'scale(1.35)';
+            avatarPendant.style.marginLeft = '10px';
+            avatarPendant.style.borderRadius = '5%';
+            avatarPendant.style.zIndex = '114514';
+            avatarPendant.style.opacity = '0.75';
+            // 父元素的后面插入
+            avatar.parentNode.insertBefore(avatarPendant, avatar.nextSibling);
+        }
     }
 
     function codeforces() {
