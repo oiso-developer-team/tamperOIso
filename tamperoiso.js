@@ -136,7 +136,7 @@
                 searchBoxInput.style.borderRadius = '5px 0 0 5px';
                 searchBoxInput.style.cursor = 'text';
                 searchBoxInput.style.zIndex = '1002';
-                searchBoxInput.placeholder = '搜索题目、题解、博客、用户';
+                searchBoxInput.placeholder = '搜索题目、帖子、题解、博客、用户';
                 searchBoxInput.autofocus = true;
                 // 如果系统是暗色模式，则文本是白色的
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -567,7 +567,7 @@
             }, 750);
         }
 
-        if (location.href.indexOf("https://www.luogu.com.cn/discuss/lists") != -1) {
+        if (true) {
             setTimeout(function () {
                 // 获取所有 /discuss/show?postid=<数字> 的<a>标签
                 const discussList = document.querySelectorAll("a[href^='/discuss/show?postid=']");
@@ -605,7 +605,7 @@
                         }
                     }
                 });
-            }, 750);
+            }, 0);
         }
     }
 
