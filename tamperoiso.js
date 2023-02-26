@@ -15,6 +15,112 @@
     'use strict';
     console.log("tamperOIso loaded.");
 
+    function refirstTime(){
+        localStorage.setItem('firstTime', 'true');
+    }
+    // refirstTime();
+
+    // 检查是否是用户第一次使用
+    if (localStorage.getItem('firstTime') == null || localStorage.getItem('firstTime') == 'true') {
+        localStorage.setItem('firstTime', 'false');
+        // 如果是第一次使用，则弹出欢迎界面
+        var welcome = document.createElement('div');
+        welcome.id = 'welcome';
+        welcome.style.position = 'fixed';
+        welcome.style.top = '0';
+        welcome.style.left = '0';
+        welcome.style.width = '100%';
+        welcome.style.height = '100%';
+        welcome.style.background = 'rgba(0, 0, 0, 0.5)';
+        welcome.style.backdropFilter = 'blur(5px)';
+        welcome.style.transition = 'opacity 0.5s';
+        welcome.style.opacity = '0';
+        welcome.style.zIndex = '1000';
+        setTimeout(function () {
+            welcome.style.opacity = '1';
+        }, 0);
+        document.body.appendChild(welcome);
+
+        var welcomeBox = document.createElement('div');
+        welcomeBox.id = 'welcomeBox';
+        welcomeBox.style.position = 'fixed';
+        welcomeBox.style.top = '30%';
+        welcomeBox.style.left = '50%';
+        welcomeBox.style.transform = 'translate(-50%, -50%)';
+        welcomeBox.style.width = '620px';
+        welcomeBox.style.height = '400px';
+        welcomeBox.style.background = 'white';
+        welcomeBox.style.borderRadius = '10px';
+        welcomeBox.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
+        welcomeBox.style.transition = 'opacity 0.5s';
+        welcomeBox.style.opacity = '0';
+        welcomeBox.style.zIndex = '1001';
+        setTimeout(function () {
+            welcomeBox.style.opacity = '1';
+        }, 0);
+        document.body.appendChild(welcomeBox);
+
+        var welcomeBoxTitle = document.createElement('div');
+        welcomeBoxTitle.id = 'welcomeBoxTitle';
+        welcomeBoxTitle.style.position = 'absolute';
+        welcomeBoxTitle.style.top = '0';
+        welcomeBoxTitle.style.left = '0';
+        welcomeBoxTitle.style.width = '100%';
+        welcomeBoxTitle.style.height = '50px';
+        welcomeBoxTitle.style.lineHeight = '50px';
+        welcomeBoxTitle.style.textAlign = 'center';
+        welcomeBoxTitle.style.fontSize = '20px';
+        welcomeBoxTitle.style.fontWeight = 'bold';
+        welcomeBoxTitle.style.color = 'white';
+        welcomeBoxTitle.style.background = 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)';
+        welcomeBoxTitle.style.backgroundSize = '600%';
+        welcomeBoxTitle.style.animation = 'gradient 15s ease infinite';
+        welcomeBoxTitle.innerHTML = '欢迎使用tamperOIso';
+        welcomeBox.appendChild(welcomeBoxTitle);
+
+        var welcomeBoxContent = document.createElement('div');
+        welcomeBoxContent.id = 'welcomeBoxContent';
+        welcomeBoxContent.style.position = 'absolute';
+        welcomeBoxContent.style.top = '50px';
+        welcomeBoxContent.style.left = '0';
+        welcomeBoxContent.style.width = '100%';
+        welcomeBoxContent.style.height = '350px';
+        welcomeBoxContent.style.padding = '20px';
+        welcomeBoxContent.style.boxSizing = 'border-box';
+        welcomeBoxContent.style.fontSize = '16px';
+        welcomeBoxContent.style.color = 'black';
+        welcomeBoxContent.innerHTML = `tamperOIso是一个OIer的好帮手，它可以在洛谷等网站上提供OI检索服务。<br/>它可以让您查看并参与帖子投票、在任何地方按下 Shift+Space 来搜索，还能支持显示头像挂件。<br/>此界面将不会再显示。强烈建议新手查看<a style="color:blue" href="https://www.amzcd.top/posts/tamperOIso-guide/">新手指南</a>，里面包含了更多关于tamperOIso的用法说明。`;
+        welcomeBox.appendChild(welcomeBoxContent);
+        
+        var welcomeBoxButton = document.createElement('div');
+        welcomeBoxButton.id = 'welcomeBoxButton';
+        welcomeBoxButton.style.position = 'absolute';
+        welcomeBoxButton.style.bottom = '20px';
+        welcomeBoxButton.style.right = '20px';
+        welcomeBoxButton.style.width = '80px';
+        welcomeBoxButton.style.height = '40px';
+        welcomeBoxButton.style.lineHeight = '40px';
+        welcomeBoxButton.style.textAlign = 'center';
+        welcomeBoxButton.style.fontSize = '16px';
+        welcomeBoxButton.style.fontWeight = 'bold';
+        welcomeBoxButton.style.color = 'white';
+        welcomeBoxButton.style.background = 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)';
+        welcomeBoxButton.style.backgroundSize = '600%';
+        welcomeBoxButton.style.animation = 'gradient 15s ease infinite';
+        welcomeBoxButton.style.borderRadius = '10px';
+        welcomeBoxButton.style.cursor = 'pointer';
+        welcomeBoxButton.innerHTML = '确定';
+        welcomeBoxButton.onclick = function () {
+            welcome.style.opacity = '0';
+            welcomeBox.style.opacity = '0';
+            setTimeout(function () {
+                document.body.removeChild(welcome);
+                document.body.removeChild(welcomeBox);
+            }, 500);
+        };
+        welcomeBox.appendChild(welcomeBoxButton);
+    }
+
     function requestWithCache(url, callback) {
         // 从缓存中读取数据
         var cache = JSON.parse(localStorage.getItem('cache'));
@@ -611,7 +717,7 @@
 
         // 添加功能按钮
         var nav = document.getElementsByClassName("lfe-body")[0];
-        nav.innerHTML += `<a data-v-0640126c="" data-v-639bc19b="" data-v-5e85f938="" colorscheme="none" class="color-none" id="refreshbtn"
+        nav.innerHTML += `<a data-v-0640126c="" data-v-639bc19b="" data-v-5e85f938="" colorscheme="none" class="color-none" id="refreshbtn" style="cursor:pointer;"
         data-v-12f19ddc="" style="color: inherit;"><span data-v-639bc19b="" data-v-0640126c="" class="icon"><svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                 <g id="refresh-icon" fill="#000000">
