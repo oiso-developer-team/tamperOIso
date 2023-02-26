@@ -21,11 +21,17 @@
         if (cache == null) {
             cache = {};
         }
-        if (cache[url] != null && new Date().getTime() - cache[url].updateTime < 1000 * 60 * 60 * 24) {
+        if (cache[url] != null) {
             console.log("cache hit.");
             console.log(cache[url]);
             callback(cache[url]);
-            return;
+            if(new Date().getTime() - cache[url].updateTime < 1000 * 60 * 60 * 24){
+                // 缓存数据不超过一天，不需要更新
+                return;
+            }else{
+                // 缓存数据超过一天，需要更新
+                console.log("but the cache has expired.");
+            }
         }
         // 缓存中没有数据，从服务器获取数据
         console.log("cache miss.");
