@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name         tamperOIso - OIer的好帮手
-// @namespace    https://www.oiso.cf/
+// @namespace    http://tampermonkey.net/
+// @homepage     https://www.oiso.cf/
 // @version      0.9.3
 // @description  在洛谷、Codeforces等网站上提供OI检索服务
 // @author       OIso开发团队
