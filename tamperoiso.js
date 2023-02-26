@@ -15,6 +15,41 @@
     'use strict';
     console.log("tamperOIso loaded.");
 
+    function requestWithCache(url, callback) {
+        // 从缓存中读取数据
+        var cache = JSON.parse(localStorage.getItem('cache'));
+        if (cache == null) {
+            cache = {};
+        }
+        if (cache[url] != null) {
+            console.log("cache hit.");
+            console.log(cache[url]);
+            callback(cache[url]);
+            return;
+        }
+        // 缓存中没有数据，从服务器获取数据
+        console.log("cache miss.");
+        // 蓝色console.log
+        console.log("%c[requestWithCache] url = " + url, "color: blue");
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: url,
+            onload: function (response) {
+                // 将数据缓存到本地
+                const res = {"responseText":response.responseText};
+                cache[url] = res;
+                console.log("%c[requestWithCache] res = " + res, "color: blue");
+                localStorage.setItem('cache', JSON.stringify(cache));
+                callback(res);
+            }
+        });
+    }
+
+    function clearCache() {
+        localStorage.removeItem('cache');
+    }
+    // clearCache();
+
     function luogu() {
         // 监听按下shift+space键
         document.addEventListener('keydown', function (event) {
@@ -222,28 +257,40 @@
                     var myurl = `https://online.oiso.cf/suggestion?q=${searchBoxInput.value}`;
                     console.log(myurl);
                     window['sugStatus'] = true;
-                    GM_xmlhttpRequest({
-                        method: "get",
-                        url: myurl,
-                        headers: {
-                            "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
-                        },
-                        onload: function (response) {
-                            var data = JSON.parse(response.responseText);
-                            console.log(data);
-                            let hits = data.hits.hits;
-                            $("#suggestionContainer").empty();
-                            let sel = $("#suggestionContainer");
-                            for (const hit in hits) {
-                                console.log(hits[hit]._id);
-                                sel.append(`<div style="height:35px;" onclick="gosug('${hits[hit]._source.name}')">${hits[hit]._source.name}</div>`);
-                            }
-                            window['sugStatus'] = false;
-                        },
-                        onerror: function (response) {
-                            console.log("获取提示信息失败...");
-                            window['sugStatus'] = false;
+                    // GM_xmlhttpRequest({
+                    //     method: "get",
+                    //     url: myurl,
+                    //     headers: {
+                    //         "Content-Type": "application/x-www-form-urlencoded;charset=utf-8"
+                    //     },
+                    //     onload: function (response) {
+                    //         var data = JSON.parse(response.responseText);
+                    //         console.log(data);
+                    //         let hits = data.hits.hits;
+                    //         $("#suggestionContainer").empty();
+                    //         let sel = $("#suggestionContainer");
+                    //         for (const hit in hits) {
+                    //             console.log(hits[hit]._id);
+                    //             sel.append(`<div style="height:35px;" onclick="gosug('${hits[hit]._source.name}')">${hits[hit]._source.name}</div>`);
+                    //         }
+                    //         window['sugStatus'] = false;
+                    //     },
+                    //     onerror: function (response) {
+                    //         console.log("获取提示信息失败...");
+                    //         window['sugStatus'] = false;
+                    //     }
+                    // });
+                    requestWithCache(myurl, function (response) {
+                        var data = JSON.parse(response.responseText);
+                        console.log(data);
+                        let hits = data.hits.hits;
+                        $("#suggestionContainer").empty();
+                        let sel = $("#suggestionContainer");
+                        for (const hit in hits) {
+                            console.log(hits[hit]._id);
+                            sel.append(`<div style="height:35px;" onclick="gosug('${hits[hit]._source.name}')">${hits[hit]._source.name}</div>`);
                         }
+                        window['sugStatus'] = false;
                     });
                 }
             }
@@ -259,26 +306,44 @@
                 // avatar 是一个 img 标签
                 // 添加一张头像挂件图片，刚好覆盖在头像上面
                 var avatarPendant = document.createElement('img');
-                GM_xmlhttpRequest({
-                    method: "GET",
-                    url: "https://online.oiso.cf/pendant/get?uid=" + uid,
-                    onload: function (response) {
-                        if (response.responseText != 'False') {
-                            console.log(response.responseText);
-                            avatarPendant.src = response.responseText;
-                            // avatarPendant.style.position = 'absolute';
-                            avatarPendant.className = 'am-comment-avatar-pendant';
-                            avatarPendant.style.top = '0';
-                            avatarPendant.style.left = '0';
-                            avatarPendant.style.height = '48px';
-                            // 中心放大
-                            avatarPendant.style.transform = 'scale(1.35)';
-                            avatarPendant.style.marginLeft = '-48px';
-                            avatarPendant.style.borderRadius = '5%';
-                            avatarPendant.style.opacity = '0.75';
-                            // 父元素的后面插入
-                            avatar.parentNode.insertBefore(avatarPendant, avatar.nextSibling);
-                        }
+                // GM_xmlhttpRequest({
+                //     method: "GET",
+                //     url: "https://online.oiso.cf/pendant/get?uid=" + uid,
+                //     onload: function (response) {
+                //         if (response.responseText != 'False') {
+                //             console.log(response.responseText);
+                //             avatarPendant.src = response.responseText;
+                //             // avatarPendant.style.position = 'absolute';
+                //             avatarPendant.className = 'am-comment-avatar-pendant';
+                //             avatarPendant.style.top = '0';
+                //             avatarPendant.style.left = '0';
+                //             avatarPendant.style.height = '48px';
+                //             // 中心放大
+                //             avatarPendant.style.transform = 'scale(1.35)';
+                //             avatarPendant.style.marginLeft = '-48px';
+                //             avatarPendant.style.borderRadius = '5%';
+                //             avatarPendant.style.opacity = '0.75';
+                //             // 父元素的后面插入
+                //             avatar.parentNode.insertBefore(avatarPendant, avatar.nextSibling);
+                //         }
+                //     }
+                // });
+                requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
+                    if (response.responseText != 'False') {
+                        console.log(response.responseText);
+                        avatarPendant.src = response.responseText;
+                        // avatarPendant.style.position = 'absolute';
+                        avatarPendant.className = 'am-comment-avatar-pendant';
+                        avatarPendant.style.top = '0';
+                        avatarPendant.style.left = '0';
+                        avatarPendant.style.height = '48px';
+                        // 中心放大
+                        avatarPendant.style.transform = 'scale(1.35)';
+                        avatarPendant.style.marginLeft = '-48px';
+                        avatarPendant.style.borderRadius = '5%';
+                        avatarPendant.style.opacity = '0.75';
+                        // 父元素的后面插入
+                        avatar.parentNode.insertBefore(avatarPendant, avatar.nextSibling);
                     }
                 });
             }
@@ -286,24 +351,20 @@
             if (my_avatar) { // 右上角的头像
                 const uid = my_avatar.src.split('/')[5].split('.')[0];
                 console.log("my_avatar", uid);
-                GM_xmlhttpRequest({
-                    method: "GET",
-                    url: "https://online.oiso.cf/pendant/get?uid=" + uid,
-                    onload: function (response) {
-                        console.log(response.responseText);
-                        if (response.responseText != 'False') {
-                            var my_avatar_pendant = document.createElement('img');
-                            my_avatar_pendant.src = response.responseText;
-                            my_avatar_pendant.className = 'am-comment-avatar-pendant';
-                            my_avatar_pendant.style.top = '0';
-                            my_avatar_pendant.style.right = '0';
-                            my_avatar_pendant.style.height = '35px';
-                            my_avatar_pendant.style.transform = 'scale(1.35)';
-                            my_avatar_pendant.style.borderRadius = '5%';
-                            my_avatar_pendant.style.opacity = '0.75';
-                            my_avatar_pendant.style.position = 'absolute';
-                            my_avatar.parentNode.insertBefore(my_avatar_pendant, my_avatar.nextSibling);
-                        }
+                requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
+                    console.log(response.responseText);
+                    if (response.responseText != 'False') {
+                        var my_avatar_pendant = document.createElement('img');
+                        my_avatar_pendant.src = response.responseText;
+                        my_avatar_pendant.className = 'am-comment-avatar-pendant';
+                        my_avatar_pendant.style.top = '0';
+                        my_avatar_pendant.style.right = '0';
+                        my_avatar_pendant.style.height = '35px';
+                        my_avatar_pendant.style.transform = 'scale(1.35)';
+                        my_avatar_pendant.style.borderRadius = '5%';
+                        my_avatar_pendant.style.opacity = '0.75';
+                        my_avatar_pendant.style.position = 'absolute';
+                        my_avatar.parentNode.insertBefore(my_avatar_pendant, my_avatar.nextSibling);
                     }
                 });
             }
@@ -312,48 +373,40 @@
                 if (document.getElementsByClassName('avatar')[1]) {
                     uid = document.getElementsByClassName('avatar')[1].src.split('/')[5].split('.')[0];
                     console.log(uid);
-                    GM_xmlhttpRequest({
-                        method: "GET",
-                        url: "https://online.oiso.cf/pendant/get?uid=" + uid,
-                        onload: function (response) {
-                            console.log(response.responseText);
-                            if (response.responseText != 'False') {
-                                var my_avatar_pendant = document.createElement('img');
-                                my_avatar_pendant.src = response.responseText;
-                                my_avatar_pendant.className = 'am-comment-avatar-pendant';
-                                my_avatar_pendant.style.bottom = '24px';
-                                my_avatar_pendant.style.left = '24px';
-                                my_avatar_pendant.style.height = '64px';
-                                my_avatar_pendant.style.transform = 'scale(1.35)';
-                                my_avatar_pendant.style.borderRadius = '5%';
-                                my_avatar_pendant.style.opacity = '0.75';
-                                my_avatar_pendant.style.position = 'absolute';
-                                document.getElementsByClassName('avatar')[1].parentNode.insertBefore(my_avatar_pendant, document.getElementsByClassName('avatar')[1].nextSibling);
-                            }
+                    requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
+                        console.log(response.responseText);
+                        if (response.responseText != 'False') {
+                            var my_avatar_pendant = document.createElement('img');
+                            my_avatar_pendant.src = response.responseText;
+                            my_avatar_pendant.className = 'am-comment-avatar-pendant';
+                            my_avatar_pendant.style.bottom = '25px';
+                            my_avatar_pendant.style.left = '25px';
+                            my_avatar_pendant.style.height = '64px';
+                            my_avatar_pendant.style.transform = 'scale(1.35)';
+                            my_avatar_pendant.style.borderRadius = '5%';
+                            my_avatar_pendant.style.opacity = '0.75';
+                            my_avatar_pendant.style.position = 'absolute';
+                            document.getElementsByClassName('avatar')[1].parentNode.insertBefore(my_avatar_pendant, document.getElementsByClassName('avatar')[1].nextSibling);
                         }
                     });
                 }
                 if (document.getElementsByClassName('avatar')[2]) {
                     for (let i = 2; i < document.getElementsByClassName('avatar').length; i++) {
-                        GM_xmlhttpRequest({
-                            method: "GET",
-                            url: "https://online.oiso.cf/pendant/get?uid=" + uid,
-                            onload: function (response) {
-                                console.log(response.responseText);
-                                if (response.responseText != 'False') {
-                                    const element = document.getElementsByClassName('avatar')[i];
-                                    var my_avatar_pendant = document.createElement('img');
-                                    my_avatar_pendant.src = 'https://bpic.588ku.com/element_origin_min_pic/20/10/14/c87c8d105577605fcb43b91835a9a3b5.jpg';
-                                    my_avatar_pendant.className = 'am-comment-avatar-pendant';
-                                    my_avatar_pendant.style.top = '10px';
-                                    my_avatar_pendant.style.left = '0px';
-                                    my_avatar_pendant.style.height = '60px';
-                                    my_avatar_pendant.style.transform = 'scale(1.35)';
-                                    my_avatar_pendant.style.borderRadius = '5%';
-                                    my_avatar_pendant.style.opacity = '0.75';
-                                    my_avatar_pendant.style.position = 'absolute';
-                                    element.parentNode.insertBefore(my_avatar_pendant, element.nextSibling);
-                                }
+                        requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
+                            console.log(response.responseText);
+                            if (response.responseText != 'False') {
+                                const element = document.getElementsByClassName('avatar')[i];
+                                var my_avatar_pendant = document.createElement('img');
+                                my_avatar_pendant.src = response.responseText;
+                                my_avatar_pendant.className = 'am-comment-avatar-pendant';
+                                my_avatar_pendant.style.top = '10px';
+                                my_avatar_pendant.style.left = '0px';
+                                my_avatar_pendant.style.height = '60px';
+                                my_avatar_pendant.style.transform = 'scale(1.35)';
+                                my_avatar_pendant.style.borderRadius = '5%';
+                                my_avatar_pendant.style.opacity = '0.75';
+                                my_avatar_pendant.style.position = 'absolute';
+                                element.parentNode.insertBefore(my_avatar_pendant, element.nextSibling);
                             }
                         });
                     }
@@ -363,23 +416,19 @@
                     const element = document.getElementsByClassName('avatar')[i];
                     const uid = document.getElementsByClassName('avatar')[i].children[0].src.split('/')[5].split('.')[0];
                     console.log(uid);
-                    GM_xmlhttpRequest({
-                        method: "GET",
-                        url: "https://online.oiso.cf/pendant/get?uid=" + uid,
-                        onload: function (response) {
-                            console.log(response.responseText);
-                            if (response.responseText != 'False') {
-                                var my_avatar_pendant = document.createElement('img');
-                                my_avatar_pendant.src = response.responseText;
-                                my_avatar_pendant.className = 'am-comment-avatar-pendant';
-                                my_avatar_pendant.style.marginLeft = '-45px';
-                                my_avatar_pendant.style.marginTop = '12px';
-                                my_avatar_pendant.style.height = my_avatar_pendant.style.width = '35px';
-                                my_avatar_pendant.style.transform = 'scale(1.35)';
-                                my_avatar_pendant.style.borderRadius = '5%';
-                                my_avatar_pendant.style.opacity = '0.75';
-                                element.parentNode.insertBefore(my_avatar_pendant, element.nextSibling);
-                            }
+                    requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
+                        console.log(response.responseText);
+                        if (response.responseText != 'False') {
+                            var my_avatar_pendant = document.createElement('img');
+                            my_avatar_pendant.src = response.responseText;
+                            my_avatar_pendant.className = 'am-comment-avatar-pendant';
+                            my_avatar_pendant.style.marginLeft = '-45px';
+                            my_avatar_pendant.style.marginTop = '12px';
+                            my_avatar_pendant.style.height = my_avatar_pendant.style.width = '35px';
+                            my_avatar_pendant.style.transform = 'scale(1.35)';
+                            my_avatar_pendant.style.borderRadius = '5%';
+                            my_avatar_pendant.style.opacity = '0.75';
+                            element.parentNode.insertBefore(my_avatar_pendant, element.nextSibling);
                         }
                     });
                 }
@@ -388,23 +437,19 @@
                     const element = document.getElementsByClassName('avatar')[i];
                     const uid = document.getElementsByClassName('avatar')[i].src.split('/')[5].split('.')[0];
                     console.log(uid);
-                    GM_xmlhttpRequest({
-                        method: "GET",
-                        url: "https://online.oiso.cf/pendant/get?uid=" + uid,
-                        onload: function (response) {
-                            console.log(response.responseText);
-                            if (response.responseText != 'False') {
-                                var my_avatar_pendant = document.createElement('img');
-                                my_avatar_pendant.src = response.responseText;
-                                my_avatar_pendant.className = 'am-comment-avatar-pendant';
-                                my_avatar_pendant.style.marginLeft = '-3em';
-                                my_avatar_pendant.style.marginTop = '0px';
-                                my_avatar_pendant.style.height = my_avatar_pendant.style.width = '2em';
-                                my_avatar_pendant.style.transform = 'scale(1.35)';
-                                my_avatar_pendant.style.borderRadius = '5%';
-                                my_avatar_pendant.style.opacity = '0.75';
-                                element.parentNode.insertBefore(my_avatar_pendant, element.nextSibling);
-                            }
+                    requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
+                        console.log(response.responseText);
+                        if (response.responseText != 'False') {
+                            var my_avatar_pendant = document.createElement('img');
+                            my_avatar_pendant.src = response.responseText;
+                            my_avatar_pendant.className = 'am-comment-avatar-pendant';
+                            my_avatar_pendant.style.marginLeft = '-3em';
+                            my_avatar_pendant.style.marginTop = '0px';
+                            my_avatar_pendant.style.height = my_avatar_pendant.style.width = '2em';
+                            my_avatar_pendant.style.transform = 'scale(1.35)';
+                            my_avatar_pendant.style.borderRadius = '5%';
+                            my_avatar_pendant.style.opacity = '0.75';
+                            element.parentNode.insertBefore(my_avatar_pendant, element.nextSibling);
                         }
                     });
                 }
@@ -475,6 +520,6 @@
     } else if (window.location.href.indexOf("codeforces") != -1) {
         codeforces();
     } else if (window.location.href.indexOf("oiso") != -1) {
-        oiso();
+        oiso();GM_xmlhttpRequest
     }
 })();
