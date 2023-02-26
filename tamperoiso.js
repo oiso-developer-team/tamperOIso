@@ -464,7 +464,7 @@
             setTimeout(function () {
                 const pannel = document.getElementsByClassName('am-panel')[0];
                 pannel.innerHTML += `<p>
-                <a id="forbutton" class="am-btn am-btn-primary am-btn-sm" style="margin-top: 5px;" num=0>👍_次点赞</a><span>&nbsp;</span><a class="am-btn am-btn-danger am-btn-sm" name="save-discuss" id="againstbutton" style="margin-top: 5px;" num=0>👎_次踩</a><span>&nbsp;</span><button class="am-btn am-btn-default am-btn-sm" id="pa_comment" onclick='document.getElementById("pa_comment").innerHTML = "每人每天各有15次赞/踩机会。<br/>为什么不限制用户单次操作？<br/>因为这有Cookies泄露的风险。"'>赞/踩说明</button>
+                <a id="forbutton" class="am-btn am-btn-primary am-btn-sm" style="margin-top: 5px;" num=0>👍_次点赞</a><span>&nbsp;</span><a class="am-btn am-btn-danger am-btn-sm" name="save-discuss" id="againstbutton" style="margin-top: 5px;" num=0>👎_次踩</a>
                 <br>
                 <button id="savebbsbutton" class="am-btn am-btn-success am-btn-sm" style="margin-top: 5px;">保存帖子</button><span>&nbsp;</span><a class="am-btn am-btn-warning am-btn-sm" name="save-discuss" target='_blank' href="https://lgbbs.oiso.cf/show.php?url=https://www.luogu.com.cn/discuss/${discussId}" style="margin-top: 5px;">查看备份</a>
                 </p>`;
@@ -567,6 +567,7 @@
             }, 750);
         }
 
+        // 在帖子链接右边显示赞/踩数量
         if (true) {
             setTimeout(function () {
                 // 获取所有 /discuss/show?postid=<数字> 的<a>标签
@@ -607,6 +608,21 @@
                 });
             }, 0);
         }
+
+        // 添加功能按钮
+        var nav = document.getElementsByClassName("lfe-body")[0];
+        nav.innerHTML += `<a data-v-0640126c="" data-v-639bc19b="" data-v-5e85f938="" colorscheme="none" class="color-none" id="refreshbtn"
+        data-v-12f19ddc="" style="color: inherit;"><span data-v-639bc19b="" data-v-0640126c="" class="icon"><svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="refresh-icon" fill="#000000">
+                    <path fill="currentcolor" d="M10.0833333,3.33333333 C5.83333333,3.33333333 2.75,6.41666667 2.75,10.6666667 C2.75,14.9166667 5.83333333,18 10.0833333,18 C14.3333333,18 17.4166667,14.9166667 17.4166667,10.6666667 C17.4166667,6.41666667 14.3333333,3.33333333 10.0833333,3.33333333 Z M10.0833333,16.25 C7.125,16.25 4.5833333,13.7083333 4.5833333,10.6666667 C4.5833333,7.625 7.125,5.08333333 10.0833333,5.08333333 C13.0416667,5.08333333 15.5833333,7.625 15.5833333,10.6666667 C15.5833333,13.7083333 13.0416667,16.25 10.0833333,16.25 Z M11.4583333,6.41666667 L11.4583333,8.33333333 L13.375,8.33333333 L13.375,6.41666667 L15.2916667,6.41666667 L10.0833333,1.20833333 L4.875,6.41666667 L11.4583333,6.41666667 Z" id="Refresh-icon"></path>
+                </g>
+            </g>
+        </svg></span> <span data-v-639bc19b="" data-v-0640126c="" class="text">清缓存</span></a>`;
+        document.getElementById("refreshbtn").addEventListener("click", function () {
+            clearCache();
+            location.reload();
+        });
     }
 
     function codeforces() {
