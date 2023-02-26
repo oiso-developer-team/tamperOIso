@@ -21,7 +21,7 @@
         if (cache == null) {
             cache = {};
         }
-        if (cache[url] != null) {
+        if (cache[url] != null && new Date().getTime() - cache[url].updateTime < 1000 * 60 * 60 * 24) {
             console.log("cache hit.");
             console.log(cache[url]);
             callback(cache[url]);
@@ -36,7 +36,7 @@
             url: url,
             onload: function (response) {
                 // 将数据缓存到本地
-                const res = {"responseText":response.responseText};
+                const res = {"responseText":response.responseText, "status":response.status, "updateTime":new Date().getTime()};
                 cache[url] = res;
                 console.log("%c[requestWithCache] res = " + res, "color: blue");
                 localStorage.setItem('cache', JSON.stringify(cache));
@@ -306,28 +306,6 @@
                 // avatar 是一个 img 标签
                 // 添加一张头像挂件图片，刚好覆盖在头像上面
                 var avatarPendant = document.createElement('img');
-                // GM_xmlhttpRequest({
-                //     method: "GET",
-                //     url: "https://online.oiso.cf/pendant/get?uid=" + uid,
-                //     onload: function (response) {
-                //         if (response.responseText != 'False') {
-                //             console.log(response.responseText);
-                //             avatarPendant.src = response.responseText;
-                //             // avatarPendant.style.position = 'absolute';
-                //             avatarPendant.className = 'am-comment-avatar-pendant';
-                //             avatarPendant.style.top = '0';
-                //             avatarPendant.style.left = '0';
-                //             avatarPendant.style.height = '48px';
-                //             // 中心放大
-                //             avatarPendant.style.transform = 'scale(1.35)';
-                //             avatarPendant.style.marginLeft = '-48px';
-                //             avatarPendant.style.borderRadius = '5%';
-                //             avatarPendant.style.opacity = '0.75';
-                //             // 父元素的后面插入
-                //             avatar.parentNode.insertBefore(avatarPendant, avatar.nextSibling);
-                //         }
-                //     }
-                // });
                 requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
                     if (response.responseText != 'False') {
                         console.log(response.responseText);
