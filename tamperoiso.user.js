@@ -2,7 +2,7 @@
 // @name         tamperOIso - OIer的好帮手
 // @namespace    http://tampermonkey.net/
 // @homepage     https://www.oiso.cf/
-// @version      0.9.3
+// @version      1.0.0
 // @description  在洛谷、Codeforces等网站上提供OI检索服务
 // @author       OIso开发团队
 // @match        https://www.luogu.com.cn/*
@@ -14,7 +14,11 @@
 // ==/UserScript==
 (function () {
     'use strict';
-    console.log("tamperOIso loaded.");
+
+    function msg(modname, msg) {
+        console.log("%c[tamperOIso." + modname + "] %c" + msg, "color: #ff7f00", "color: #065279");
+    }
+    msg("main", "正在加载tamperOIso");
 
     function refirstTime(){
         localStorage.setItem('firstTime', 'true');
@@ -129,21 +133,21 @@
             cache = {};
         }
         if (cache[url] != null) {
-            console.log("cache hit.");
-            console.log(cache[url]);
+            msg("requestWithCache", "cache hit.");
+            msg("requestWithCache", cache[url]);
             callback(cache[url]);
             if (new Date().getTime() - cache[url].updateTime < 1000 * 60 * 60 * 24) {
                 // 缓存数据不超过一天，不需要更新
                 return;
             } else {
                 // 缓存数据超过一天，需要更新
-                console.log("but the cache has expired.");
+                msg("requestWithCache",  "but the cache has expired.");
             }
         }
         // 缓存中没有数据，从服务器获取数据
-        console.log("cache miss.");
+        msg("requestWithCache",  "cache miss.");
         // 蓝色console.log
-        console.log("%c[requestWithCache] url = " + url, "color: blue");
+        msg("requestWithCache",  "url = " + url);
         GM_xmlhttpRequest({
             method: "GET",
             url: url,
@@ -151,9 +155,43 @@
                 // 将数据缓存到本地
                 const res = { "responseText": response.responseText, "status": response.status, "updateTime": new Date().getTime() };
                 cache[url] = res;
-                console.log("%c[requestWithCache] res = " + res, "color: blue");
+                msg("requestWithCache",  "res = " + res);
                 localStorage.setItem('cache', JSON.stringify(cache));
                 callback(res);
+            }
+        });
+    }
+
+    function getPendant(uid, callback) {
+        // 检查本地缓存
+        var cache = JSON.parse(localStorage.getItem('pendantCache'));
+        if (cache != null && cache["updateTime"] != null && new Date().getTime() - cache["updateTime"] < 1000 * 60 * 60 * 24) {
+            msg("getPendant",  "pendant cache hit.");
+            msg("getPendant",  cache[uid]);
+            if(cache[uid] == undefined || cache[uid] == null) {
+                callback({"responseText":"False"});
+                return;
+            }
+            callback({"responseText":cache[uid]});
+            return;
+        }
+        // 本地缓存中没有数据，从服务器获取数据
+        msg("getPendant",  "pendant cache miss.");
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: "https://online.oiso.cf/pendant/getall",
+            onload: function (response) {
+                // 将数据缓存到本地
+                const res = JSON.parse(response.responseText);
+                cache = res;
+                msg("getPendant",  cache);
+                cache["updateTime"] = new Date().getTime();
+                localStorage.setItem('pendantCache', JSON.stringify(cache));
+                if(cache[uid] == undefined || cache[uid] == null) {
+                    callback({"responseText":"False"});
+                    return;
+                }
+                callback({"responseText":cache[uid]});
             }
         });
     }
@@ -167,7 +205,7 @@
         // 监听按下shift+space键
         document.addEventListener('keydown', function (event) {
             if (event.keyCode == 32 && event.shiftKey) {
-                console.log("shift+space pressed.");
+                msg("quickSearch",  "shift+space pressed.");
                 if (window['searchBoxOpened'] == true) {
                     // 如果搜索框已经打开，则关闭搜索框
                     window['searchBoxOpened'] = false;
@@ -253,7 +291,7 @@
                 // 按下回车键时，跳转到搜索结果页面
                 searchBoxInput.addEventListener('keydown', function (event) {
                     if (event.keyCode == 13) {
-                        console.log("enter pressed.");
+                        msg("quickSearch",  "enter pressed.");
                         window.open("https://www.oiso.cf/search?q=" + searchBoxInput.value);
                     }
                 });
@@ -358,7 +396,6 @@
                 });
 
                 const script_str = `function gosug(name) {
-                    console.log("gosug" + name)
                     document.getElementById("searchBoxInput").value = (name);
                     window.open('https://www.oiso.cf/search?q=' + name);
                 }`;
@@ -372,16 +409,16 @@
                         return;
                     }
                     var myurl = `https://online.oiso.cf/suggestion?q=${searchBoxInput.value}`;
-                    console.log(myurl);
+                    msg("getSuggestions",  myurl);
                     window['sugStatus'] = true;
                     requestWithCache(myurl, function (response) {
                         var data = JSON.parse(response.responseText);
-                        console.log(data);
+                        msg("getSuggestions",  data);
                         let hits = data.hits.hits;
                         $("#suggestionContainer").empty();
                         let sel = $("#suggestionContainer");
                         for (const hit in hits) {
-                            console.log(hits[hit]._id);
+                            msg("getSuggestions",  hits[hit]._id);
                             sel.append(`<div style="height:35px;" onclick="gosug('${hits[hit]._source.name}')">${hits[hit]._source.name}</div>`);
                         }
                         window['sugStatus'] = false;
@@ -394,15 +431,15 @@
             var avatars = document.getElementsByClassName('am-comment-avatar');
             for (let i = 0; i < avatars.length; i++) {
                 const avatar = avatars[i];
-                console.log(avatar);
+                msg("render_avatar_pendant",  avatar);
                 const uid = avatar.src.split('/')[5].split('.')[0];
-                console.log(uid);
+                msg("render_avatar_pendant",  uid);
                 // avatar 是一个 img 标签
                 // 添加一张头像挂件图片，刚好覆盖在头像上面
                 var avatarPendant = document.createElement('img');
-                requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
+                getPendant(uid, function (response) {
                     if (response.responseText != 'False') {
-                        console.log(response.responseText);
+                        msg("render_avatar_pendant",  response.responseText);
                         avatarPendant.src = response.responseText;
                         // avatarPendant.style.position = 'absolute';
                         avatarPendant.className = 'am-comment-avatar-pendant';
@@ -422,9 +459,9 @@
             var my_avatar = document.getElementsByClassName('avatar')[0];
             if (my_avatar) { // 右上角的头像
                 const uid = my_avatar.src.split('/')[5].split('.')[0];
-                console.log("my_avatar", uid);
-                requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
-                    console.log(response.responseText);
+                msg("render_avatar_pendant",  "my_avatar", uid);
+                getPendant(uid, function (response) {
+                    msg("render_avatar_pendant",  response.responseText);
                     if (response.responseText != 'False') {
                         var my_avatar_pendant = document.createElement('img');
                         my_avatar_pendant.src = response.responseText;
@@ -444,9 +481,9 @@
                 var uid;
                 if (document.getElementsByClassName('avatar')[1]) {
                     uid = document.getElementsByClassName('avatar')[1].src.split('/')[5].split('.')[0];
-                    console.log(uid);
-                    requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
-                        console.log(response.responseText);
+                    msg("render_avatar_pendant",  uid);
+                    getPendant(uid, function (response) {
+                        msg("render_avatar_pendant",  response.responseText);
                         if (response.responseText != 'False') {
                             var my_avatar_pendant = document.createElement('img');
                             my_avatar_pendant.src = response.responseText;
@@ -464,8 +501,8 @@
                 }
                 if (document.getElementsByClassName('avatar')[2]) {
                     for (let i = 2; i < document.getElementsByClassName('avatar').length; i++) {
-                        requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
-                            console.log(response.responseText);
+                        getPendant(uid, function (response) {
+                            msg("render_avatar_pendant",  response.responseText);
                             if (response.responseText != 'False') {
                                 const element = document.getElementsByClassName('avatar')[i];
                                 var my_avatar_pendant = document.createElement('img');
@@ -487,9 +524,9 @@
                 for (let i = 1; i < document.getElementsByClassName('avatar').length; i++) {
                     const element = document.getElementsByClassName('avatar')[i];
                     const uid = document.getElementsByClassName('avatar')[i].children[0].src.split('/')[5].split('.')[0];
-                    console.log(uid);
-                    requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
-                        console.log(response.responseText);
+                    msg("render_avatar_pendant",  uid);
+                    getPendant(uid, function (response) {
+                        msg("render_avatar_pendant",  response.responseText);
                         if (response.responseText != 'False') {
                             var my_avatar_pendant = document.createElement('img');
                             my_avatar_pendant.src = response.responseText;
@@ -508,9 +545,9 @@
                 for (let i = 1; i < document.getElementsByClassName('avatar').length; i++) {
                     const element = document.getElementsByClassName('avatar')[i];
                     const uid = document.getElementsByClassName('avatar')[i].src.split('/')[5].split('.')[0];
-                    console.log(uid);
-                    requestWithCache("https://online.oiso.cf/pendant/get?uid=" + uid, function (response) {
-                        console.log(response.responseText);
+                    msg("render_avatar_pendant",  uid);
+                    getPendant(uid, function (response) {
+                        msg("render_avatar_pendant",  response.responseText);
                         if (response.responseText != 'False') {
                             var my_avatar_pendant = document.createElement('img');
                             my_avatar_pendant.src = response.responseText;
@@ -540,7 +577,7 @@
         // 检测点击事件
         document.addEventListener('click', function (e) {
             // 如果超链接
-            console.log(e);
+            msg("requestWithCache",  e);
             if (e.target.tagName == 'SPAN') {
                 // 重新渲染头像挂件
                 setTimeout(function () {
@@ -577,7 +614,7 @@
                 </p>`;
                 document.getElementById("savebbsbutton").addEventListener("click", function () {
                     document.getElementById("savebbsbutton").innerHTML = "保存中……";
-                    console.log("savebbs~!");
+                    msg("bbs",  "savebbs~!");
                     const url = `https://lgbbs.oiso.cf/save.php?url=https://www.luogu.com.cn/discuss/${discussId}?page=1`;
                     GM_xmlhttpRequest({
                         method: "GET",
@@ -599,7 +636,7 @@
                 });
                 document.getElementById("forbutton").addEventListener("click", function () {
                     document.getElementById("forbutton").innerHTML = "赞成中……";
-                    console.log("for~!");
+                    msg("bbs",  "for~!");
                     const url = `//online.oiso.cf/lgbbs/for?id=${discussId}`;
                     GM_xmlhttpRequest({
                         method: "GET",
@@ -629,7 +666,7 @@
                 });
                 document.getElementById("againstbutton").addEventListener("click", function () {
                     document.getElementById("againstbutton").innerHTML = "反对中……";
-                    console.log("against~!");
+                    msg("bbs",  "against~!");
                     const url = `//online.oiso.cf/lgbbs/against?id=${discussId}`;
                     GM_xmlhttpRequest({
                         method: "GET",
@@ -661,7 +698,7 @@
                     method: "GET",
                     url: `//online.oiso.cf/lgbbs/get?id=${discussId}`,
                     onload: function (response) {
-                        console.log(response.responseText);
+                        msg("bbs",  response.responseText);
                         if (JSON.parse(response.responseText).code == 200) {
                             const data = JSON.parse(response.responseText);
                             document.getElementById("forbutton").setAttribute("num", data.for);
@@ -696,7 +733,7 @@
                         "Content-Type": "application/json"
                     },
                     onload: function (response) {
-                        console.log(response.responseText);
+                        msg("bbs",  response.responseText);
                         if (JSON.parse(response.responseText).code == 200) {
                             const data = JSON.parse(response.responseText);
                             // 遍历所有的帖子
@@ -715,21 +752,6 @@
                 });
             }, 0);
         }
-
-        // 添加功能按钮
-        var nav = document.getElementsByClassName("lfe-body")[0];
-        nav.innerHTML += `<a data-v-0640126c="" data-v-639bc19b="" data-v-5e85f938="" colorscheme="none" class="color-none" id="refreshbtn" style="cursor:pointer;"
-        data-v-12f19ddc="" style="color: inherit;"><span data-v-639bc19b="" data-v-0640126c="" class="icon"><svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                <g id="refresh-icon" fill="#000000">
-                    <path fill="currentcolor" d="M10.0833333,3.33333333 C5.83333333,3.33333333 2.75,6.41666667 2.75,10.6666667 C2.75,14.9166667 5.83333333,18 10.0833333,18 C14.3333333,18 17.4166667,14.9166667 17.4166667,10.6666667 C17.4166667,6.41666667 14.3333333,3.33333333 10.0833333,3.33333333 Z M10.0833333,16.25 C7.125,16.25 4.5833333,13.7083333 4.5833333,10.6666667 C4.5833333,7.625 7.125,5.08333333 10.0833333,5.08333333 C13.0416667,5.08333333 15.5833333,7.625 15.5833333,10.6666667 C15.5833333,13.7083333 13.0416667,16.25 10.0833333,16.25 Z M11.4583333,6.41666667 L11.4583333,8.33333333 L13.375,8.33333333 L13.375,6.41666667 L15.2916667,6.41666667 L10.0833333,1.20833333 L4.875,6.41666667 L11.4583333,6.41666667 Z" id="Refresh-icon"></path>
-                </g>
-            </g>
-        </svg></span> <span data-v-639bc19b="" data-v-0640126c="" class="text">清缓存</span></a>`;
-        document.getElementById("refreshbtn").addEventListener("click", function () {
-            clearCache();
-            location.reload();
-        });
     }
 
     function codeforces() {
