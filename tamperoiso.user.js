@@ -2,7 +2,7 @@
 // @name         tamperOIso - OIer的好帮手
 // @namespace    http://tampermonkey.net/
 // @homepage     https://www.oiso.cf/
-// @version      1.0.2
+// @version      1.0.2.3030418
 // @description  在洛谷、Codeforces等网站上提供OI检索服务
 // @author       OIso开发团队
 // @match        https://www.luogu.com.cn/*
