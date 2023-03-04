@@ -2,7 +2,7 @@
 // @name         tamperOIso - OIer的好帮手
 // @namespace    http://tampermonkey.net/
 // @homepage     https://www.oiso.cf/
-// @version      1.0.0
+// @version      1.0.1
 // @description  在洛谷、Codeforces等网站上提供OI检索服务
 // @author       OIso开发团队
 // @match        https://www.luogu.com.cn/*
@@ -198,6 +198,7 @@
 
     function clearCache() {
         localStorage.removeItem('cache');
+        localStorage.removeItem('pendantCache');
     }
     // clearCache();
 
@@ -574,31 +575,19 @@
         } else {
             render_avatar_pendant();
         }
-        // 检测点击事件
-        document.addEventListener('click', function (e) {
-            // 如果超链接
-            msg("requestWithCache",  e);
-            if (e.target.tagName == 'SPAN') {
-                // 重新渲染头像挂件
-                setTimeout(function () {
-                    var avatarPendants = document.getElementsByClassName('am-comment-avatar-pendant');
-                    for (let i = 0; i < avatarPendants.length; i++) {
-                        const avatarPendant = avatarPendants[i];
-                        avatarPendant.remove();
-                    }
-                    render_avatar_pendant();
-                }, 750);
-            } else if (e.target.tagName == 'A') {
-                // 重新渲染头像挂件
-                setTimeout(function () {
-                    var avatarPendants = document.getElementsByClassName('am-comment-avatar-pendant');
-                    for (let i = 0; i < avatarPendants.length; i++) {
-                        const avatarPendant = avatarPendants[i];
-                        avatarPendant.remove();
-                    }
-                    render_avatar_pendant();
-                }, 1500);
-            }
+
+        // 检测页面url变化（即便是#后面的变化）
+        window.addEventListener('click', function (e) {
+            msg("reRender",  e.target);
+            // 重新渲染头像挂件
+            setTimeout(function () {
+                var avatarPendants = document.getElementsByClassName('am-comment-avatar-pendant');
+                for (let i = 0; i < avatarPendants.length; i++) {
+                    const avatarPendant = avatarPendants[i];
+                    avatarPendant.remove();
+                }
+                render_avatar_pendant();
+            }, 750);
         });
 
         // 正则匹配url https://www.luogu.com.cn/discuss/<数字>
@@ -607,11 +596,11 @@
             const discussId = window.location.href.match(/[0-9]+/)[0];
             setTimeout(function () {
                 const pannel = document.getElementsByClassName('am-panel')[0];
-                pannel.innerHTML += `<p>
+                pannel.children[0].innerHTML += `
                 <a id="forbutton" class="am-btn am-btn-primary am-btn-sm" style="margin-top: 5px;" num=0>👍_次点赞</a><span>&nbsp;</span><a class="am-btn am-btn-danger am-btn-sm" name="save-discuss" id="againstbutton" style="margin-top: 5px;" num=0>👎_次踩</a>
                 <br>
-                <button id="savebbsbutton" class="am-btn am-btn-success am-btn-sm" style="margin-top: 5px;">保存帖子</button><span>&nbsp;</span><a class="am-btn am-btn-warning am-btn-sm" name="save-discuss" target='_blank' href="https://lgbbs.oiso.cf/show.php?url=https://www.luogu.com.cn/discuss/${discussId}" style="margin-top: 5px;">查看备份</a>
-                </p>`;
+                <button id="savebbsbutton" class="am-btn am-btn-success am-btn-sm" style="margin-top: 5px;">点击保存</button><span>&nbsp;</span><a class="am-btn am-btn-warning am-btn-sm" name="save-discuss" target='_blank' href="https://lgbbs.oiso.cf/show.php?url=https://www.luogu.com.cn/discuss/${discussId}" style="margin-top: 5px;">前往备份</a>
+                `;
                 document.getElementById("savebbsbutton").addEventListener("click", function () {
                     document.getElementById("savebbsbutton").innerHTML = "保存中……";
                     msg("bbs",  "savebbs~!");
@@ -752,6 +741,16 @@
                 });
             }, 0);
         }
+
+        // 刷新缓存按钮
+        setTimeout(function () {
+            msg("clearCache",  "Button added!");
+            document.getElementsByClassName("info")[0].innerHTML += `<button class="am-btn am-btn-primary am-btn-sm" id="refreshcache" style="float:right;">刷新 tamperOIso 缓存</button>`;
+            document.getElementById("refreshcache").addEventListener("click", function () {
+                clearCache();
+                window.location.reload();
+            });
+        }, 100);
     }
 
     function codeforces() {
