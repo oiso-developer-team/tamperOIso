@@ -745,7 +745,7 @@
         // 刷新缓存按钮
         setTimeout(function () {
             msg("clearCache",  "Button added!");
-            document.getElementsByClassName("info")[0].innerHTML += `<button class="am-btn am-btn-primary am-btn-sm" id="refreshcache" style="float:right;">刷新 tamperOIso 缓存</button>`;
+            document.getElementsByClassName("info")[document.getElementsByClassName("info").length-1].innerHTML += `<button class="am-btn am-btn-primary am-btn-sm" id="refreshcache" style="float:right;">刷新 tamperOIso 缓存</button>`;
             document.getElementById("refreshcache").addEventListener("click", function () {
                 clearCache();
                 window.location.reload();
