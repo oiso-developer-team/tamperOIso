@@ -2,7 +2,7 @@
 // @name         tamperOIso - OIer的好帮手
 // @namespace    http://tampermonkey.net/
 // @homepage     https://www.oiso.cf/
-// @version      1.0.2.3030418
+// @version      1.0.3
 // @description  在洛谷、Codeforces等网站上提供OI检索服务
 // @author       OIso开发团队
 // @match        https://www.luogu.com.cn/*
@@ -21,13 +21,13 @@
     msg("main", "正在加载tamperOIso");
 
     function refirstTime(){
-        localStorage.setItem('firstTime', 'true');
+        localStorage.setItem('firTime', 'true');
     }
     // refirstTime();
 
     // 检查是否是用户第一次使用
-    if (localStorage.getItem('firstTime') == null || localStorage.getItem('firstTime') == 'true') {
-        localStorage.setItem('firstTime', 'false');
+    if (localStorage.getItem('firTime') == null || localStorage.getItem('firTime') == 'true') {
+        localStorage.setItem('firTime', 'false');
         // 如果是第一次使用，则弹出欢迎界面
         var welcome = document.createElement('div');
         welcome.id = 'welcome';
@@ -124,6 +124,19 @@
             }, 500);
         };
         welcomeBox.appendChild(welcomeBoxButton);
+
+        // 获取uid
+        // <img data-v-258e49ac="" data-v-0640126c="" src="https://cdn.luogu.com.cn/upload/usericon/222419.png" alt="diyanqi" class="avatar">
+        var uid = document.querySelector('.avatar').src.match(/\/(\d+)\./)[1];
+        // https://online.oiso.cf/rewards/tamper/report/222419
+        var url = 'https://online.oiso.cf/rewards/tamper/report/' + uid;
+        requestWithCache(url, function (data) {
+            if (data.code == 200) {
+                welcomeBoxContent.innerHTML += '<br/><br/>系统监测到您这是第一次使用tamperOIso，感谢您的支持！<b>5</b> 积分已经发放到您的账户中。';
+            } else {
+                welcomeBoxContent.innerHTML += '<br/><br/>感谢您选择使用 tamperOIso！';
+            }
+        });
     }
 
     function requestWithCache(url, callback) {
